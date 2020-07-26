@@ -94,18 +94,31 @@ if (p.buttonPressed == "Yes") {
       "notes": notes
    };
    
-   logRoast(roastObj);
-
-   if (cleaningCycle) {
-      let adjDateObj = roastDateObj;
-      adjDateObj.setSeconds(adjDateObj.getSeconds()+1);
-      logRoast(adjDateObj, "Cleaning Cycle");
-   }
-   else {
-      //Alert if a cleaning cycle is required next roast
-      if (isCleaningCycleRequired()) {
-         showReminder("A cleaning cycle is required after next roast");
+   let roastResult = logRoast(roastObj);
+   if (roastResult) {
+      if (cleaningCycle) {
+         let adjDateObj = roastDateObj;
+         adjDateObj.setSeconds(adjDateObj.getSeconds()+1);
+         let cleaningCycleObj = {
+            "roastDate": adjDateObj, 
+            "roastedCoffee": "Cleaning Cycle"
+         };
+         let cleaningResult = logRoast(cleaningCycleObj);
+         if (!cleaningResult) {
+            console.log("Fatal error occurred logging cleaning cycle");
+            context.fail();
+         }
       }
+      else {
+         //Alert if a cleaning cycle is required next roast
+         if (isCleaningCycleRequired()) {
+            showReminder("A cleaning cycle is required after next roast");
+         }
+      }
+   }
+   else {   
+         console.log("Fatal error occurred logging roast");
+         context.fail();
    }
    
    editor.focusModeEnabled = false;
@@ -190,9 +203,11 @@ function getCoffeeRecord(coffeeName) {
 //Returns: True
 function logRoast(roast) {
    //Ensure mandatory fields are included
-   if (!roast.roastDate || !roast.roastedCoffee) {
+   if (!roast.roastDate || roast.roastDate.toString() == "Invalid Date" ||
+       !roast.roastedCoffee) {
       console.log("Roast Date and Coffee are required");
       context.fail();
+      return false;
    }
    
    //Convert times to seconds
@@ -208,7 +223,7 @@ function logRoast(roast) {
 
    //Get coffee record
    let coffeeRecord = getCoffeeRecord(roast.roastedCoffee);
-
+   
    //Build roast log payload
    let fields = {
       "Date": roast.roastDate.toString(),
