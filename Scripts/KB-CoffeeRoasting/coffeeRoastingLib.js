@@ -28,7 +28,8 @@ function isCleaningCycleRequired() {
    
    let queryURL = authObj.baseURL + "/" +
                   encodeURIComponent("Roasting Log") + "?" +
-                  "maxRecords=4&sortField=Date&sortDirection=desc";
+                  "maxRecords=4&sortField=Date&sortDirection=desc&filterByFormula=" +
+                  encodeURIComponent("NOT(FIND(\"Full Maintenance (1900-01-01):\", {Name}))");
    
    //Create HTTP and make GET request to Airtable
    let http = HTTP.create();
