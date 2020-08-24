@@ -14,18 +14,17 @@ let f = () => {
 
    let fmCloud = FileManager.createCloud();
    let templates = [];
-   let templatesShort = [];
    let directoryListing = fmCloud.listContents(TEMPLATE_PATH);
 
    let regex = new RegExp(escapeRegExp(TEMPLATE_PATH) + "(.+)" +
-                          escapeRegExp(TEMPLATE_FILE_EXT)+ "$");   
+                          escapeRegExp(TEMPLATE_FILE_EXT) + "$");   
    directoryListing.forEach(filename => {
       let match = filename.match(regex);
       if (match) {
-         templates.push(match[0]);
-         templatesShort.push(match[1]);
+         templates.push(match[1]);
       }
    });
+   
    templates.sort();
    
    // Check if we found any valid templates
@@ -38,7 +37,7 @@ let f = () => {
    let p = Prompt.create();
    p.title = "New Draft with Template";
    p.message = "Select a template. A new draft will be created based upon the template selected.";
-   templatesShort.forEach((filename, index) => {
+   templates.forEach((filename, index) => {
       p.addButton(filename, index);
    });
    
@@ -48,7 +47,7 @@ let f = () => {
    
    // Get the selected template
    let selectedIndex = p.buttonPressed;
-   let template = templates[selectedIndex];
+   let template = TEMPLATE_PATH + templates[selectedIndex] + TEMPLATE_FILE_EXT;
 
    // Create new draft and assign content
    let d = Draft.create();
