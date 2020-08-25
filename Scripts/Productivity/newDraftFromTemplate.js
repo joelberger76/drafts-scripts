@@ -1,16 +1,21 @@
 // New draft from template
 // Select from a list of templates in the Drafts iCloud Directory.
+// Templates stored in .template files
+// Counterpart tag files named the same as template with .tag extension
 
 /*
 TODO:
 - [ ] Test on Mobile
 - [ ] Test with special characters
-- [ ] Add tag functionality?
+- [ ] Parameters
+- [ ] Add new templates: meeting notes, memo
+- [ ] Add templates to deploy script
 */
 
 let f = () => {
    const TEMPLATE_PATH = 'Library/Templates/';
    const TEMPLATE_FILE_EXT = '.template';
+   const TAG_FILE_EXT = '.tag';
 
    let fmCloud = FileManager.createCloud();
    let templates = [];
@@ -48,10 +53,19 @@ let f = () => {
    // Get the selected template
    let selectedIndex = p.buttonPressed;
    let template = TEMPLATE_PATH + templates[selectedIndex] + TEMPLATE_FILE_EXT;
-
+   
    // Create new draft and assign content
    let d = Draft.create();
    d.content = d.processTemplate(fmCloud.readString(template));
+   
+   // Check for counterpart tag file
+   let tagFile = fmCloud.readString(TEMPLATE_PATH + templates[selectedIndex] + TAG_FILE_EXT);
+   if (tagFile) {
+      tagFile.split("\n").forEach(tag => {
+         d.addTag(tag);
+      });
+   }
+   
    d.update();
 
    // Load new draft
