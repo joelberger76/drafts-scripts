@@ -1,7 +1,8 @@
 // New draft from template
 // Select from a list of templates in the Drafts iCloud Directory.
-// Templates stored in .template files
-// Counterpart tag files named the same as template with .tag extension
+// Templates stored in .template files.
+// Counterpart tag files named the same as template with .tag extension.
+// Tags should be seperated by newlines.
 
 /*
 TODO:
