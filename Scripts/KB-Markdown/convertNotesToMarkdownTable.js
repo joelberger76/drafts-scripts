@@ -2,9 +2,6 @@
 /*
 TODO: 
 - [ ] Size columns (max length (or max value), min X)
-- [ ] Overwrite selection with new markdown table
-- [ ] Set insertion point when done -OR-
-- [ ] HTML inline comment notes <!-- -->
 */
 
 let f = () => {
@@ -53,10 +50,16 @@ let f = () => {
    let mdOutput = "|Topic|Notes|\n" + "|:--|:--|\n";
    let trailingBRsRegex = new RegExp("(<br>)+$");
    topicArray.forEach(t => {
+      // Combine notes lines with <BR>, strip trailing <BR>s from the end of
+      // the string due to whitespace
       mdOutput = mdOutput + "|" + t.name + "|" + 
                  t.notes.join('<br>').replace(trailingBRsRegex, '') + "|\n";
    });
-   alert(mdOutput);
+   
+   //HTML comment current selection, and add new markdown table below
+   let newSelection = "<!--\n" + sel + "\n-->\n\n" + mdOutput + "\n";
+   editor.setSelectedText(newSelection);
+   editor.setSelectedRange(selRange[0] + newSelection.length, 0);
 
 	return true;
 }
