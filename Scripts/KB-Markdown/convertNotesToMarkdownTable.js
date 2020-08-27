@@ -2,9 +2,9 @@
 /*
 TODO: 
 - [ ] Size columns (max length (or max value), min X)
-- [ ] Deal with blank lines between heading sections
 - [ ] Overwrite selection with new markdown table
-- [ ] Set insertion point when done
+- [ ] Set insertion point when done -OR-
+- [ ] HTML inline comment notes <!-- -->
 */
 
 let f = () => {
@@ -18,7 +18,7 @@ let f = () => {
    }
 
    let topicRegex = new RegExp("^#+ (.*)");
-   let notesRegex = new RegExp("^( *)([-,\*])( .*)");
+   let notesRegex = new RegExp("^( *)([-\*])( .*)");
    let topicArray = [];
    let topic = {
       "name": null,
@@ -26,20 +26,16 @@ let f = () => {
    };
    
    // Organize selected lines into topics and related notes
-   let firstTopic = true;
-   sel.split("\n").forEach(line => {
+   sel.split("\n").forEach((line, index) => {
       let topicMatch = line.match(topicRegex);
       if (topicMatch) {
-         if (!firstTopic) {
+         // Start a new topic if this isn't the first line
+         if (index) {
             topicArray.push(JSON.parse(JSON.stringify(topic)));
-         }
-         else {
-            firstTopic = false;
          }
       
          topic.name = topicMatch[1];
          topic.notes = [];
-         //alert("Line: " + line + "|||Topic: " + topic.name);
       }
       else {
          let notesMatch = line.match(notesRegex);
@@ -49,24 +45,16 @@ let f = () => {
          else {
             topic.notes.push(line);
          }
-         //alert("Line: " + line + "|||Note: " + topic.notes[topic.notes.length-1]);
       }
    });
    topicArray.push(JSON.parse(JSON.stringify(topic)));
    
    // Output each object using the Markdown table format
    let mdOutput = "|Topic|Notes|\n" + "|:--|:--|\n";
+   let trailingBRsRegex = new RegExp("(<br>)+$");
    topicArray.forEach(t => {
-      //alert("Topic: " + t.name);
-      //alert("Notes: " + t.notes);
-      mdOutput = mdOutput + "|" + t.name + "|";
-      
-      let numNotes = t.notes.length;
-      t.notes.forEach((n,index) => {
-         if (index != numNotes-1) {mdOutput = mdOutput + n + "<br>";}
-         else {mdOutput = mdOutput + n;}
-      });
-      mdOutput = mdOutput + "|\n";
+      mdOutput = mdOutput + "|" + t.name + "|" + 
+                 t.notes.join('<br>').replace(trailingBRsRegex, '') + "|\n";
    });
    alert(mdOutput);
 
