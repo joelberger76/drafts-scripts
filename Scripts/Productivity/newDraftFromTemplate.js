@@ -12,10 +12,11 @@ TODO:
 - [ ] Add templates to deploy script
 */
 
+const TEMPLATE_PATH = 'Library/Templates/';
+const TEMPLATE_FILE_EXT = '.template';
+const TAG_FILE_EXT = '.tag';
+
 let f = () => {
-   const TEMPLATE_PATH = 'Library/Templates/';
-   const TEMPLATE_FILE_EXT = '.template';
-   const TAG_FILE_EXT = '.tag';
    let fmCloud = FileManager.createCloud();
 
    let templateBase = null;
