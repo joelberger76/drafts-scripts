@@ -1,11 +1,10 @@
 // Convert Notes to Markdown Table
-/*
-TODO: 
-- [ ] Size columns (max length (or max value), min X)
-*/
+
+const lineLength = 75;
+const topicLength = 24;
+const notesLength = lineLength - topicLength;
 
 let f = () => {
-// Apply Markdown bold to selection, or insert ** if no selection
    var sel = editor.getSelectedText();
    var selRange = editor.getSelectedRange();
 
@@ -47,17 +46,21 @@ let f = () => {
    topicArray.push(JSON.parse(JSON.stringify(topic)));
    
    // Output each object using the Markdown table format
-   let mdOutput = "|Topic|Notes|\n" + "|:--|:--|\n";
+   let mdOutput = "\n" + "|Topic".padEnd(topicLength+1) +
+                  "|Notes".padEnd(notesLength+1) + "|\n" + 
+                  "|:--".padEnd(topicLength+1, '-') +
+                  "|:--".padEnd(notesLength+1, '-') + "|";
    let trailingBRsRegex = new RegExp("(<br>)+$");
    topicArray.forEach(t => {
       // Combine notes lines with <BR>, strip trailing <BR>s from the end of
       // the string due to whitespace
-      mdOutput = mdOutput + "|" + t.name + "|" + 
-                 t.notes.join('<br>').replace(trailingBRsRegex, '') + "|\n";
+      mdOutput = mdOutput + "\n|" + t.name.padEnd(topicLength) + "|" + 
+                 t.notes.join('<br>').replace(trailingBRsRegex, '').padEnd(notesLength) + 
+                 "|";
    });
    
    //HTML comment current selection, and add new markdown table below
-   let newSelection = "<!--\n" + sel + "\n-->\n\n" + mdOutput + "\n";
+   let newSelection = "<!--\n" + sel + "\n-->\n" + mdOutput;
    editor.setSelectedText(newSelection);
    editor.setSelectedRange(selRange[0] + newSelection.length, 0);
 
