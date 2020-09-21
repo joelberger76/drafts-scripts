@@ -1,7 +1,7 @@
 //Behmor 1600 Roast Profile
 
 //Setup Roast Profiles
-const roastProfiles = ["P1", "P2", "P3", "P4", "P5"];
+const roastProfiles = ["P1", "P2", "P3", "P4", "P5", "Manual"];
 const roastRegions = `
 P1-2: All centrals, Peruvian and Colombians
 P3: Brazilians, Africans, SE Asians, Malabar, 
