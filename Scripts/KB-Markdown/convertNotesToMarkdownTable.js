@@ -3,6 +3,7 @@
 const lineLength = 75;
 const topicLength = 24;
 const notesLength = lineLength - topicLength;
+const indentSize = 3;
 
 let f = () => {
    var sel = editor.getSelectedText();
@@ -51,12 +52,14 @@ let f = () => {
                   "|:--".padEnd(topicLength+1, '-') +
                   "|:--".padEnd(notesLength+1, '-') + "|";
    let trailingBRsRegex = new RegExp("(<br>)+$");
+   let indentRegex = new RegExp(" {" + indentSize + "}", "g");
    topicArray.forEach(t => {
       // Combine notes lines with <BR>, strip trailing <BR>s from the end of
-      // the string due to whitespace
+      // the string due to whitespace, replace indents with 2 emspaces
       mdOutput = mdOutput + "\n|" + t.name.padEnd(topicLength) + "|" + 
-                 t.notes.join('<br>').replace(trailingBRsRegex, '').padEnd(notesLength) + 
-                 "|";
+                 t.notes.join('<br>').replace(trailingBRsRegex, '')
+                                     .replace(indentRegex, "&emsp;&emsp;").padEnd(notesLength) + 
+                                     "|";
    });
    
    //HTML comment current selection, and add new markdown table below
