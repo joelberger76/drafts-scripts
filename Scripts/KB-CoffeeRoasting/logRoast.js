@@ -44,10 +44,10 @@ for(var ix in lines) {
             roastDate = keyValueObj.value;
          }
          else if (keyValueObj.key == "Min Voltage") {
-            minVoltage = keyValueObj.value;
+            minVoltage = keyValueObj.value.replace("v", "").trim();
          }
          else if (keyValueObj.key == "Max Voltage") {
-            maxVoltage = keyValueObj.value;
+            maxVoltage = keyValueObj.value.replace("v", "").trim();
          }
          else if (keyValueObj.key == "First Crack") {
             firstCrack = keyValueObj.value;
