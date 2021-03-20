@@ -1,85 +1,44 @@
 //OmniFocus Add
+//Add tasks to OmniFocus using Transport Text syntax
 
-//Add tasks to OmniFocus using modified TaskPaper syntax
+const macBaseURL = "kmtrigger://macro=Add%20Task%20to%20OmniFocus&value=";
+const iOSBaseURL = "shortcuts://x-callback-url/run-shortcut";
+var success = '';
 
-//Default due time
-const defaultDueTime = "23:55";
+if (device.systemName == 'iOS') {
+   var cb = CallbackURL.create();
+   cb.baseURL = iOSBaseURL;
+   cb.addParameter("name", "Add Task to OmniFocus");
+   cb.addParameter("input", "text");
+}
 
-const baseURL = "omnifocus:///paste";
-var cb = CallbackURL.create();
-cb.baseURL = baseURL;
+let lines = draft.content.trim().split('\n');
 
-var sendToOmniFocus = '';
-
-var lines = draft.content.trim().split('\n');
-var linesArrayLength = lines.length - 1;
-var task = '';
-
- //Assume project is inbox
- var target = "inbox";
-
-for(var ix in lines) {
-   task = lines[ix];
+for (var ix in lines) {
+   task = lines[ix].trim();
 
    if (task.length > 0) {
-      var dueMatch = '';
-      var timeMatch = '';
-
-      //Check task for due date [@due(]
-      dueMatch = task.match(/@due\([^\)]+/);
-      if (dueMatch) {
-         //Check for the existence of time (:, am, pm)
-         var regex = new RegExp(":|am|pm", "i");
-         timeMatch = dueMatch[0].match(regex);
-         if (!timeMatch) {
-            //Add default time
-            var formattedDate = dueMatch[0] + " " + defaultDueTime;
-            task = task.replace(dueMatch[0], formattedDate); 
-         }
-      }
-
-      //Check for project using @project syntax
-      projMatch = task.match(/@project\((.*?)\)/);
-      if (projMatch) {
-         target = "/task/" + projMatch[1];
-         task = task.replace(projMatch[0], "");
-      }
-
-      //Peek for Action Group, otherwise send to OmniFocus
-      if (ix < linesArrayLength && task.trim().substr(0, 1) == "-" && lines[parseInt(ix) + 1].trim().substr(0,1) == "-" && lines[parseInt(ix) + 1].substr(0,1) != "-") {
-         sendToOmniFocus = sendToOmniFocus + '\n' + task;
+      //Send Task to OmniFocus
+      if (device.systemName == 'iOS') {
+         cb.addParameter("text", task);
+         success = cb.open();
+         //success = app.openURL(iOSBaseURL + encodeURIComponent(task));
       }
       else {
-         //Send Task to OmniFocus
-         if (sendToOmniFocus) {
-            sendToOmniFocus = sendToOmniFocus + '\n' + task;
-         }
-         else {
-            sendToOmniFocus = task;
-         }
-         cb.addParameter("target", target);
-         cb.addParameter("content", sendToOmniFocus);
-
-         var success = cb.open();
-         if (success) {
-	          console.log("TaskPaper added to OmniFocus");
-         }
-         else { 
-            console.log(cb.status);
-            console.log("Task: " + sendToOmniFocus);
-            if (cb.status == "cancel") {
-               context.cancel();
-            }
-            else {
-               context.fail();
-            }
-         }
-         //Reset for next task
-         var target = "inbox";
-         sendToOmniFocus = '';
+         //macOS
+         success = app.openURL(macBaseURL + encodeURIComponent(task));
+      }
+      
+      if (success) {
+         console.log("Task Added: " + task);
+      }
+      else { 
+         console.log("Task: " + task);
+         if (device.systemName == 'iOS') {console.log(cb.status);}
+         context.fail();
       }
    }
    else {
-      console.log("Blank line - skipped");
+      console.log("Blank Line: skipped");
    }
 }
