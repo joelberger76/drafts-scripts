@@ -13,10 +13,19 @@ if (!content[0]) {
 }
 
 // Save Draft to the Craft inbox
+/* FIXME: Using replace to double encode % to workaround Craft bug
 let success = app.openURL(baseURL + "spaceId=" + encodeURIComponent(spaceID) + "&"
                                   + "title=" + encodeURIComponent(title) + "&"
                                   + "content=" + encodeURIComponent(content.join('\n')) + "&"
                                   + "folderId=");
+*/
+let encodedTitle = encodeURIComponent(title).replace('%25', '%2525');
+let encodedContent = encodeURIComponent(content.join('\n')).replace('%25', '%2525');
+let success = app.openURL(baseURL + "spaceId=" + encodeURIComponent(spaceID) + "&"
+                                  + "title=" + encodedTitle + "&"
+                                  + "content=" + encodedContent + "&"
+                                  + "folderId=");
+                                  
 if (success) {
    console.log("Draft successfully saved to Craft");
 }
