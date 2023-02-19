@@ -15,6 +15,7 @@ if (lnText.match(bulletRegex)) {
    if (lnText.match(offRegex)) {
       // Off to On
       editor.setTextInRange(lnStart, lnLen, lnText.replace(off, on));
+      editor.setSelectedRange(selStart, selLen);
    }
    else if (lnText.match(onRegex)) {
       // On to Bullet
