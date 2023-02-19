@@ -29,7 +29,14 @@ if (lnText.match(bulletRegex)) {
    }
 }
 else {
-   // Add bullet
-   editor.setTextInRange(lnStart, lnLen, bullet + lnText);
+   // Add bullet between whitespace and content
+   let findWSRegex = new RegExp("^(\\s*)(.*)");
+   let lnMatched = lnText.match(findWSRegex);
+   let lnUpdated = lnMatched[1] + bullet + lnMatched[2];
+   // Reclaim the newline if the regex lost it
+   if (lnText.endsWith("\n")) {
+      lnUpdated = lnUpdated + "\n";
+   }
+   editor.setTextInRange(lnStart, lnLen, lnUpdated);
    editor.setSelectedRange(selStart+bullet.length, selLen);
 }
