@@ -1,99 +1,98 @@
 // New draft from template
-// Select from a list of templates in the Drafts iCloud Directory.
-// Templates stored in .template files
-// Counterpart tag files named the same as template with .tag extension
-// Pass template to load through templateParam global variable.  Not pretty, but it works.
-// If no template is passed in, prompt for user input.
+// Select and process mustache templates into new drafts from drafts tagged "template"
 
 /*
-TODO:
-- [ ] Test with special characters
-- [ ] Add new templates: meeting notes, memo
-- [ ] Add templates to deploy script
+TODO
+- [ ] Align text prompt field labels
+- [ ] Date calculations
 */
 
-const TEMPLATE_PATH = 'Library/Templates/';
-const TEMPLATE_FILE_EXT = '.template';
-const TAG_FILE_EXT = '.tag';
+// Create temp workspace to query drafts
+let workspace = Workspace.create();
+if (!workspace) {
+   context.fail();
+}
+workspace.tagFilter = "template";
+workspace.setAllSort("name", false, true);
+// Get list of drafts in workspace
+let drafts = workspace.query("all");
 
-let f = () => {
-   let fmCloud = FileManager.createCloud();
-
-   let templateBase = null;
-   if (typeof templateParam !== 'undefined') {
-      templateBase = templateParam;
-   }
-   else {
-      let templates = [];
-      let directoryListing = fmCloud.listContents(TEMPLATE_PATH);
-   
-      let regex = new RegExp(escapeRegExp(TEMPLATE_PATH) + "(.+)" +
-                             escapeRegExp(TEMPLATE_FILE_EXT) + "$");   
-      directoryListing.forEach(filename => {
-         let match = filename.match(regex);
-         if (match) {
-            templates.push(match[1]);
-         }
-      });
-      
-      templates.sort();
-      
-      // Check if we found any valid templates
-      if (templates.length == 0) {
-         alert("No templates found. To make templates available to this action, place " + TEMPLATE_FILE_EXT + " files in the Drafts iCloud template directory");
-         return false;
-      }
-      
-      // Prompt to select
-      let p = Prompt.create();
-      p.title = "New Draft with Template";
-      p.message = "Select a template. A new draft will be created based upon the template selected.";
-      templates.forEach((filename, index) => {
-         p.addButton(filename, index);
-      });
-      
-      if (!p.show()) {
-         return false;
-      }
-      
-      // Get the selected template
-      let selectedIndex = p.buttonPressed;
-      templateBase = templates[selectedIndex];
-   }
-   
-   let templateContent = fmCloud.readString(TEMPLATE_PATH + templateBase +       
-                                            TEMPLATE_FILE_EXT);
-   if (!templateContent) {
-      console.log("ERROR: A problem occurred while attempting to read " +
-                    TEMPLATE_PATH + templateBase + TEMPLATE_FILE_EXT);
-      context.fail();  
-      return false;
-   }
-   
-   // Create new draft and assign content
-   let d = Draft.create();
-   d.content = d.processTemplate(templateContent);
-   
-   // Check for counterpart tag file
-   let tagFile = fmCloud.readString(TEMPLATE_PATH + templateBase + TAG_FILE_EXT);
-   if (tagFile) {
-      tagFile.split("\n").forEach(tag => {
-         d.addTag(tag);
-      });
-   }
-   
-   d.update();
-
-   // Load new draft
-   editor.load(d);
-   editor.activate();
-   return true;
+// Check if we found any valid templates
+if (drafts.length == 0) {
+   alert("No templates found. To make templates available to this action, create a draft with the template content and assign it the tag \"template\".");
+   context.fail();
 }
 
-if (!f()) {
-   context.cancel();
+// Prompt to select
+let p = Prompt.create();
+p.title = "New Draft from Template";
+
+let ix = 0
+for (let dr of drafts) {
+   p.addButton(dr.title, ix);
+   ix++;
 }
 
-function escapeRegExp(string) {
-  return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+if (!p.show()) {
+   context.fail();
+}
+
+// Get the selected template draft
+let selectedIndex = p.buttonPressed;
+let template = drafts[selectedIndex];
+let content = template.content;
+
+// Remove first line of template
+let lines = content.split('\n');
+if (lines.length > 0) {
+   lines.shift();
+   content = lines.join('\n').replace(/^\s+/, "");
+}
+
+// Populate placeholders with user input
+let pr = Prompt.create();
+pr.title = "Populate Placeholders";
+pr.addButton("OK");
+
+let variableRegex = new RegExp("{{\\s*((?!.*date.*)\\S+)\\s*}}", "gi");
+let variableMatches = content.matchAll(variableRegex);
+let mustacheVarCount = 0;
+for (const mustacheVar of variableMatches) {
+   pr.addTextField(mustacheVar[1], mustacheVar[1], "", {
+      autocapitalization: "words"
+   });
+   mustacheVarCount++;
+}
+
+if (mustacheVarCount) {
+   if (!pr.show()) {
+      context.fail();
+   }
+}
+
+// Create JSON object of template fields and values
+let values = {};
+for (key in pr.fieldValues) {
+   values[key] = pr.fieldValues[key];
+}
+
+// Create new draft and assign tags
+let d = Draft.create();
+for (let tag of template.tags) {
+   if (tag != "template") {
+      d.addTag(tag);
+   }
+}
+
+// Process Mustache template
+d.content = draft.processMustacheTemplate("text", content, values);
+d.update()
+editor.load(d)
+editor.activate();
+
+// Look for <|> to set cursor location
+let loc = d.content.search("<|>");
+if (loc != -1) {
+   editor.setText(editor.getText().replace("<|>", ""));
+   editor.setSelectedRange(loc, 0);
 }
