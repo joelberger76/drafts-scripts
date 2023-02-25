@@ -4,8 +4,12 @@
 /*
 TODO
 - [ ] Align text prompt field labels
-- [ ] Date calculations
+- [ ] Add formats to [[date|{weekday}]] dates?
 */
+
+require("Library/luxon.min.js");
+var DateTime = luxon.DateTime;
+var Info = luxon.Info;
 
 // Create temp workspace to query drafts
 let workspace = Workspace.create();
@@ -49,6 +53,18 @@ if (lines.length > 0) {
    content = lines.join('\n').replace(/^\s+/, "");
 }
 
+// Replace weekday placeholders with ISO 8601 dates
+let weekdayRegex = new RegExp("\\[\\[\\s*date\\s*\\|\\s*(\\w+)\\s*\\]\\]", "gi");
+let weekdayMatches = content.matchAll(weekdayRegex);
+let weekdayPlaceholders = [];
+for (const weekday of weekdayMatches) {
+   if (!weekdayPlaceholders.includes(weekday[0])) {
+      weekdayPlaceholders.push(weekday[0]);
+      let calcDate = getNextWeekdayDate(weekday[1]);
+      content = content.replaceAll(weekday[0], calcDate);
+   }
+}
+
 // Populate placeholders with user input
 let pr = Prompt.create();
 pr.title = "Populate Placeholders";
@@ -85,7 +101,8 @@ for (let tag of template.tags) {
 }
 
 // Process Mustache template
-d.content = draft.processMustacheTemplate("text", content, values);
+let draftsTemplateContent = draft.processTemplate(content);
+d.content = draft.processMustacheTemplate("text", draftsTemplateContent, values);
 d.update()
 editor.load(d)
 editor.activate();
@@ -95,4 +112,23 @@ let loc = d.content.search("<|>");
 if (loc != -1) {
    editor.setText(editor.getText().replace("<|>", ""));
    editor.setSelectedRange(loc, 0);
+}
+
+/******************* Functions *******************/
+function getNextWeekdayDate(weekday) {
+   const weekdayNum = Info.weekdays().indexOf(weekday.charAt(0).toUpperCase() +
+                                              weekday.slice(1).toLowerCase())+1;
+   let offset = 0;
+   if (weekdayNum) {
+      const today = DateTime.now().toISODate();
+      if (DateTime.now().weekday > weekdayNum) {
+         offset = 7;
+      }
+   }
+   else {
+       console.log("Invalid weekday provided: " + weekday);
+       context.fail();
+       return 0;
+   }
+   return DateTime.fromObject({ weekday: weekdayNum }).plus({ days: offset }).toISODate();
 }
