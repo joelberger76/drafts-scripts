@@ -101,8 +101,8 @@ for (let tag of template.tags) {
 }
 
 // Process Mustache template
-let draftsTemplateContent = draft.processTemplate(content);
-d.content = draft.processMustacheTemplate("text", draftsTemplateContent, values);
+content = draft.processMustacheTemplate("text", content, values);
+d.content = draft.processTemplate(content);
 d.update()
 editor.load(d)
 editor.activate();
