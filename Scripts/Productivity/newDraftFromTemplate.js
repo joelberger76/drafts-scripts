@@ -5,6 +5,8 @@
 TODO
 - [ ] Align text prompt field labels
 - [ ] Add formats to [[date|{weekday}]] dates?
+- [ ] Gracefully exit when cancel button is pressed?
+= [ ] Reenable support to suppress {{date}} variants (FIXME1)
 */
 
 require("Library/luxon.min.js");
@@ -70,7 +72,8 @@ let pr = Prompt.create();
 pr.title = "Populate Placeholders";
 pr.addButton("OK");
 
-let variableRegex = new RegExp("{{\\s*((?!.*date.*)\\S+)\\s*}}", "gi");
+//let variableRegex = new RegExp("{{\\s*((?!.*date.*)\\S+)\\s*}}", "gi"); //FIXME1
+let variableRegex = new RegExp("{{\\s*(\\S+)\\s*}}", "gi");
 let variableMatches = content.matchAll(variableRegex);
 let mustacheVarCount = 0;
 for (const mustacheVar of variableMatches) {
