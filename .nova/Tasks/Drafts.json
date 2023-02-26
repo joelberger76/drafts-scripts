@@ -1,0 +1,8 @@
+{
+  "actions" : {
+    "build" : {
+      "enabled" : true,
+      "script" : "\/Users\/joel\/Code\/drafts-scripts\/bin\/Deploy\\ Drafts\\ Scripts.sh\nexit 0;"
+    }
+  }
+}
