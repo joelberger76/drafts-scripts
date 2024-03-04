@@ -5,7 +5,7 @@ let indent = "    ";
 if (draft.languageGrammar == "Taskpaper") {
 	indent = "\t";
 }
-else if (draft.languageGrammar == "GitHub Markdown") {
+else if (draft.languageGrammar.toLowerCase().includes("markdown")) {
    indent = "   ";
 }
 
