@@ -18,7 +18,7 @@ p.title = "Select Project";
 var projectArray = projectList.split("\n");
 projectArray.sort();
 
-p.addSelect("project", "Projects", projectArray, null, false);
+p.addSelect("project", "Projects", projectArray, [projectArray[0]], false);
 p.addButton("OK");
 
 if (p.show()) { // user made a selection

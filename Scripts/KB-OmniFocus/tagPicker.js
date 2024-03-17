@@ -18,7 +18,7 @@ p.title = "Select Tags";
 var tagArray = tagList.split("\n");
 //tagArray.sort();
 
-p.addSelect("tags", "Tags", tagArray, null, true);
+p.addSelect("tags", "Tags", tagArray, [], true);
 p.addButton("OK");
 
 if (p.show()) { // user made a selection
