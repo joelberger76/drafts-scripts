@@ -4,13 +4,14 @@
 // Constants
 const models = [
    "gpt-3.5-turbo",
-   "gpt-4"
+   "gpt-4",
+   "gpt-4-turbo-preview"
 ]
 const editPrompt = "Edit for spelling, grammar, clarity, and conciseness:";
 const testingAnswer = "This is a mock chat response.";
 
 // Configuration
-const selectedModel = 0;
+const selectedModel = 2;
 const testing = false;
 
 // Get selection
